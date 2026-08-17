@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 final dioProvider = Provider<Dio>((ref) {
-  final dio =  Dio(
+  final dio = Dio(
     BaseOptions(
       baseUrl: 'https://api.escuelajs.co/api/v1/',
       connectTimeout: Duration(seconds: 5),
@@ -14,13 +15,17 @@ final dioProvider = Provider<Dio>((ref) {
       },
     ),
   );
-dio.interceptors.add(PrettyDioLogger(
-    requestHeader: true,
-    requestBody: true,
-    responseBody: true,
-    responseHeader: false,
-    error: true,
-    compact: true,
-  ));
+  if (kDebugMode) {
+    dio.interceptors.add(
+      PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: false,
+        error: true,
+        compact: true,
+      ),
+    );
+  }
   return dio;
 });
