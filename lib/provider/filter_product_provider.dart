@@ -1,24 +1,22 @@
-
-
+import 'package:dio_project/entities/category_entity.dart';
 import 'package:dio_project/entities/product_entity.dart';
 import 'package:dio_project/provider/category_index.dart';
 import 'package:dio_project/provider/category_provider.dart';
 import 'package:dio_project/provider/product_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-
-final filterProudctProvider = Provider<List<ProductEntity>>((ref)  {
+final filteredProductsProvider = FutureProvider<List<ProductEntity>>((
+  ref,
+) async {
   final categoryindex = ref.watch(selectedCategoryIndexProvider);
-  final categoryselected =  ref.watch(selectCategoryProvider).value ?? [];
-  final products = ref.watch(product_ProudctProvider).value ?? [];
+  final categoryselected = ref.watch(selectCategoryProvider).value ?? [];
+  final products = ref.watch(productProvider).value ?? [];
 
-if (categoryselected.isEmpty || 
-      categoryindex < 0 || 
-      categoryindex >= categoryselected.length) {
-    return []; 
+  if (categoryindex == 0 || categoryselected.isEmpty) {
+    return products;
   }
-
-  return products.where(
-    (item) => item.category.name == categoryselected[categoryindex].name,
-  ).toList();
+  final data =  products
+      .where((item) => item.category.id == categoryselected[categoryindex].id)
+      .toList();
+  return data;
 });

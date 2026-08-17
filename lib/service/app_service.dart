@@ -9,28 +9,20 @@ class AppService {
    Future<List<ProductModel>> fetchProducts() async {
     try {
       final response = await dio.get('products');
-      if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         return data.map((json) => ProductModel.fromJson(json)).toList();
-      } else {
-        throw Exception('Failed to load products');
-      }
-    } catch (e) {
-      throw Exception('Error fetching products: $e');
+    } on DioException catch (e) {
+      throw Exception('Error fetching products: ${e.message}');
     }
   }
 
    Future<List<CategoryModel>> fetchCategories() async {
     try {
       final response = await dio.get('categories');
-      if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         return data.map((json) => CategoryModel.fromJson(json)).toList();
-      } else {
-        throw Exception('Failed to load categories');
-      }
-    } catch (e) {
-      throw Exception('Error fetching categories: $e');
+    } on DioException catch (e) {
+      throw Exception('Error fetching categories: ${e.message}');
     }
   }
 }

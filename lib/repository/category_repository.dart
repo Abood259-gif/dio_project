@@ -4,10 +4,11 @@ import 'package:dio_project/provider/dio_provider.dart';
 import 'package:dio_project/service/app_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CtegoryRepo {
+class CategoryRepository {
   final AppService appService;
-  CtegoryRepo({required this.appService});
-  Future<List<CategoryEntity>> fetchCategory() async {
+  CategoryRepository({required this.appService});
+  Future<List<CategoryEntity>> fetchCategories() async {
+    await Future.delayed(const Duration(seconds: 5));
     final List<CategoryModel> response = await appService.fetchCategories();
     final data = response
         .map((categoryModel) => categoryModel.toEntity())
@@ -15,7 +16,7 @@ class CtegoryRepo {
     return data;
   }
 }
-final categoryRepoProvider = Provider<CtegoryRepo>((ref) {
+final categoryRepoProvider = Provider<CategoryRepository>((ref) {
   final dio = ref.watch(dioProvider);
-  return CtegoryRepo(appService: AppService(dio: dio));
+  return CategoryRepository(appService: AppService(dio: dio));
 });

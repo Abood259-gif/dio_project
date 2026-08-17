@@ -7,14 +7,14 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'product_model.freezed.dart';
 part 'product_model.g.dart';
 List<String> _parseImages(dynamic rawImages) {
-  if (rawImages == null || rawImages is! List) return ['https://placehold.co/600x400'];
+  if (rawImages == null || rawImages is! List || rawImages.isEmpty) return ['https://placehold.co/600x400'];
   return rawImages
       .where((item) => item != null)
       .map((item) => item.toString())
       .toList();
 }
 
-@Freezed()
+@freezed
  abstract class ProductModel with _$ProductModel   {
    const ProductModel._();
   const factory ProductModel({

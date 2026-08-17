@@ -1,14 +1,13 @@
 
+import 'package:freezed_annotation/freezed_annotation.dart';
+part 'category_entity.freezed.dart';
+@freezed
+abstract class CategoryEntity with _$CategoryEntity {
 
-class CategoryEntity {
-  final int id;
-  final String name;
-  final String slug;
-final String image;
-  CategoryEntity({
-    required this.id,
-    required this.name,
-    required this.slug,
-    required this.image,
-  });
+  const factory CategoryEntity({
+    required int id,
+    required String name,
+    required String slug,
+    required String image,
+  }) = _CategoryEntity;
 }

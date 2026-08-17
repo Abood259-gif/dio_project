@@ -1,24 +1,19 @@
 
 
 import 'package:dio_project/entities/category_entity.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class ProductEntity {
+part 'product_entity.freezed.dart';
 
-final int id;
-final String name;
-final String slug;
-final double price;
-final String description;
-final List<String> images;
-final CategoryEntity category;
-  ProductEntity({
-    required this.id,
-    required this.name,
-    required this.slug,
-    required this.price,
-    required this.description,
-    required this.images,
-    required this.category,
-  });
-
+@freezed
+abstract class ProductEntity with _$ProductEntity {
+  const factory ProductEntity({
+    required int id,
+    required String name,
+    required String slug,
+    required double price,
+    required String description,
+    required List<String> images,
+    required CategoryEntity category,
+  }) = _ProductEntity;
 }

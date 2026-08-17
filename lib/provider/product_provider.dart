@@ -2,11 +2,26 @@
 
 
 import 'package:dio_project/entities/product_entity.dart';
-import 'package:dio_project/models/product_model.dart';
-import 'package:dio_project/repository/produc_repo.dart';
+import 'package:dio_project/repository/product_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final product_ProudctProvider = FutureProvider<List<ProductEntity>>((ref) async {
-  final productRepo = ref.watch(producRepoProvider);
-  return await productRepo.getProducts();
-});
+class ProductNotifier extends AsyncNotifier<List<ProductEntity>> {
+  @override
+  Future<List<ProductEntity>> build() async {
+    final productRepo = ref.watch(producRepoProvider);
+    return await productRepo.getProducts();
+  }
+  Future<void> refreshProducts() async {
+    state = const AsyncValue.loading();
+    try {
+      final productRepo = ref.watch(producRepoProvider);
+      final products = await productRepo.getProducts();
+      state = AsyncValue.data(products);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+}
+
+final productProvider = 
+AsyncNotifierProvider<ProductNotifier,List<ProductEntity>>(ProductNotifier.new);

@@ -1,27 +1,24 @@
-
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio_project/entities/product_entity.dart';
-import 'package:dio_project/models/product_model.dart';
 import 'package:flutter/material.dart';
 
 class ProductCard extends StatelessWidget {
-  const ProductCard({super.key, required this.product, 
-  required this.onTap , 
-  required this.onAddToCart
+  const ProductCard({
+    super.key,
+    required this.product,
+    required this.onTap,
+    required this.onAddToCart,
   });
 
   final ProductEntity product;
-  final Function onTap;
-  final Function onAddToCart;
+  final VoidCallback onTap;
+  final VoidCallback onAddToCart;
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool isCompact = constraints.maxWidth < 185;
         final double titleFont = isCompact ? 16 : 18;
-        final double topNameFont = isCompact ? 15 : 20;
-        final double starSize = isCompact ? 13 : 18;
-        final double reviewFont = isCompact ? 12 : 16;
         final double priceFont = isCompact ? 18 : 20;
         final double addButtonSize = isCompact ? 34 : 42;
 
@@ -38,23 +35,16 @@ class ProductCard extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () {
                     onTap();
-                  },    
-                  child: Image.network(
-                    product.images[0],
-                    fit: BoxFit.cover,  
-                    width: double.infinity,  
-                    errorBuilder: (context, error, stackTrace) {
-    return Container(
-      width: 100,
-      height: 100,
-      color: Colors.grey[300],
-      child: const Icon(
-        Icons.broken_image,
-        color: Colors.grey,
-        size: 40,
-      ),
-    );
-  },  
+                  },
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final cacheWidth = (constraints.maxWidth * MediaQuery.devicePixelRatioOf(context)).round();
+                      return CachedNetworkImage(
+                        memCacheWidth: cacheWidth,
+                        fit: BoxFit.cover,
+                        imageUrl: product.images.firstOrNull ?? 'https://via.placeholder.com/150',
+                      );
+                    },
                   ),
                 ),
               ),
@@ -74,7 +64,7 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    
+
                     const SizedBox(height: 10),
                     Row(
                       children: [
