@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class ProducRepo implements ProductRepositoryInterface {
   final AppService appser;
   ProducRepo({required this.appser});
+  @override
   Future<List<ProductEntity>> getProducts() async {
       final products = await appser.fetchProducts();
       final List<ProductEntity> productEntities = products
