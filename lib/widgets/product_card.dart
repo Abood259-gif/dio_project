@@ -42,7 +42,19 @@ class ProductCard extends StatelessWidget {
                   child: Image.network(
                     product.images[0],
                     fit: BoxFit.cover,  
-                    width: double.infinity,    
+                    width: double.infinity,  
+                    errorBuilder: (context, error, stackTrace) {
+    return Container(
+      width: 100,
+      height: 100,
+      color: Colors.grey[300],
+      child: const Icon(
+        Icons.broken_image,
+        color: Colors.grey,
+        size: 40,
+      ),
+    );
+  },  
                   ),
                 ),
               ),

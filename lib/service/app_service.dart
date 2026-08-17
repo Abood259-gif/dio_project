@@ -1,17 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:dio_project/models/category_model.dart';
 import 'package:dio_project/models/product_model.dart';
-import 'package:dio_project/service/dio_handler.dart';
+
 
 class AppService {
-  final Dio dio = DioHandler().dio;
-static const String productUrl = 'https://api.escuelajs.co/api/v1/products';
-static const String categoryUrl = 'https://api.escuelajs.co/api/v1/categories';
-  static Future<List<ProductModel>> fetchProducts() async {
+  final Dio dio;
+  AppService({required this.dio});
+   Future<List<ProductModel>> fetchProducts() async {
     try {
-      final response = await DioHandler().dio.get(
-        productUrl,
-      );
+      final response = await dio.get('products');
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         return data.map((json) => ProductModel.fromJson(json)).toList();
@@ -23,11 +20,9 @@ static const String categoryUrl = 'https://api.escuelajs.co/api/v1/categories';
     }
   }
 
-static Future<List<CategoryModel>> fetchCategories() async {
+   Future<List<CategoryModel>> fetchCategories() async {
     try {
-      final response = await DioHandler().dio.get(
-       categoryUrl,
-      );
+      final response = await dio.get('categories');
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         return data.map((json) => CategoryModel.fromJson(json)).toList();
@@ -38,5 +33,4 @@ static Future<List<CategoryModel>> fetchCategories() async {
       throw Exception('Error fetching categories: $e');
     }
   }
-
 }

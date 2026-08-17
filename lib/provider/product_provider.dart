@@ -7,6 +7,6 @@ import 'package:dio_project/repository/produc_repo.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final product_ProudctProvider = FutureProvider<List<ProductEntity>>((ref) async {
-  final productRepo = ProducRepo();
+  final productRepo = ref.watch(producRepoProvider);
   return await productRepo.getProducts();
 });
