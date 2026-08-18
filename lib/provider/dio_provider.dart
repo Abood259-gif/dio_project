@@ -1,4 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:dio_project/service/interceptors/error_interceptor.dart';
+import 'package:dio_project/service/interceptors/logging_interceptor.dart';
+import 'package:dio_project/service/interceptors/retry_interceptor.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
@@ -15,17 +18,9 @@ final dioProvider = Provider<Dio>((ref) {
       },
     ),
   );
-  if (kDebugMode) {
-    dio.interceptors.add(
-      PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        responseBody: true,
-        responseHeader: false,
-        error: true,
-        compact: true,
-      ),
-    );
-  }
+ 
+    dio.interceptors.
+    addAll([LoggingInterceptor() ,  ErrorInterceptor() , RetryInterceptor(dio: dio)]);
+  
   return dio;
 });

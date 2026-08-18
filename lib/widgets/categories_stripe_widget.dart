@@ -73,12 +73,7 @@ class CategoriesStripeWidget extends ConsumerWidget {
             ),
           ),
         ),
-        error: (error, stackTrace) => Center(
-          child: Text(
-            'Error loading categories: $error',
-            style: const TextStyle(color: Colors.red),
-          ),
-        ),
+        error: (error, stackTrace) => null
       ),
     );
   }

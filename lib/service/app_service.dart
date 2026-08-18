@@ -12,7 +12,7 @@ class AppService {
         final List<dynamic> data = response.data;
         return data.map((json) => ProductModel.fromJson(json)).toList();
     } on DioException catch (e) {
-      throw Exception('Error fetching products: ${e.message}');
+      throw Exception(e.message);
     }
   }
 
@@ -22,7 +22,7 @@ class AppService {
         final List<dynamic> data = response.data;
         return data.map((json) => CategoryModel.fromJson(json)).toList();
     } on DioException catch (e) {
-      throw Exception('Error fetching categories: ${e.message}');
+      throw Exception(e.message);
     }
   }
 }

@@ -8,7 +8,6 @@ class CategoryRepository {
   final AppService appService;
   CategoryRepository({required this.appService});
   Future<List<CategoryEntity>> fetchCategories() async {
-    await Future.delayed(const Duration(seconds: 5));
     final List<CategoryModel> response = await appService.fetchCategories();
     final data = response
         .map((categoryModel) => categoryModel.toEntity())
