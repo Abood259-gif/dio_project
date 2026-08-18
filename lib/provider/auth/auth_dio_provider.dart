@@ -1,15 +1,17 @@
+
+
 import 'package:dio/dio.dart';
 import 'package:dio_project/service/network/interceptors/error_interceptor.dart';
 import 'package:dio_project/service/network/interceptors/logging_interceptor.dart';
-import 'package:dio_project/service/network/interceptors/retry_interceptor.dart';
-import 'package:flutter/foundation.dart';
+import 'package:dio_project/service/network/interceptors/token_interceptor.dart';
+import 'package:dio_project/service/storge/auth_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
-final dioProvider = Provider<Dio>((ref) {
+final dioAuthProvider = Provider<Dio>((ref) {
+  final storage = ref.watch(stroageprovider);
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'https://api.escuelajs.co/api/v1/',
+      baseUrl: 'https://api.escuelajs.co/api/v1/auth/',
       connectTimeout: Duration(seconds: 5),
       receiveTimeout: Duration(seconds: 3),
       headers: {
@@ -18,9 +20,8 @@ final dioProvider = Provider<Dio>((ref) {
       },
     ),
   );
- 
-    dio.interceptors.
-    addAll([LoggingInterceptor() , ErrorInterceptor() , RetryInterceptor(dio: dio)]);
-  
+
+  dio.interceptors.
+  addAll([LoggingInterceptor(), ErrorInterceptor() , AuthInterceptor(dio: dio, authStorage: storage)]);
   return dio;
 });

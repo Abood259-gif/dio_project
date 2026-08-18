@@ -1,9 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:dio_project/entities/product_entity.dart';
-import 'package:dio_project/models/category_model.dart';
 import 'package:dio_project/provider/dio_provider.dart';
 import 'package:dio_project/repository/product_repository_interface.dart';
-import 'package:dio_project/service/app_service.dart';
+import 'package:dio_project/service/network/app_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProducRepo implements ProductRepositoryInterface {
