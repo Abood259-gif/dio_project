@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:dio_project/entities/product_entity.dart';
 import 'package:dio_project/models/category_model.dart';
 import 'package:dio_project/provider/dio_provider.dart';
@@ -9,8 +10,8 @@ class ProducRepo implements ProductRepositoryInterface {
   final AppService appser;
   ProducRepo({required this.appser});
   @override
-  Future<List<ProductEntity>> getProducts() async {
-      final products = await appser.fetchProducts();
+  Future<List<ProductEntity>> getProducts({CancelToken? cancletoken}) async {
+      final products = await appser.fetchProducts(cancletoken: cancletoken);
       final List<ProductEntity> productEntities = products
           .map((productModel) => productModel.toEntity())
           .toList();

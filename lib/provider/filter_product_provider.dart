@@ -5,7 +5,7 @@ import 'package:dio_project/provider/category_provider.dart';
 import 'package:dio_project/provider/product_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final filteredProductsProvider = FutureProvider<List<ProductEntity>>((
+final filteredProductsProvider = FutureProvider.autoDispose<List<ProductEntity>>((
   ref,
 ) async {
   final categoryindex = ref.watch(selectedCategoryIndexProvider);

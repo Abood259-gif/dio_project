@@ -1,15 +1,25 @@
 
 
 
+
+
+import 'dart:developer';
+
+import 'package:dio/dio.dart';
 import 'package:dio_project/entities/product_entity.dart';
 import 'package:dio_project/repository/product_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ProductNotifier extends AsyncNotifier<List<ProductEntity>> {
+class ProductNotifier extends AutoDisposeAsyncNotifier<List<ProductEntity>> {
   @override
-  Future<List<ProductEntity>> build() async {
+ Future<List<ProductEntity>> build() async {
     final productRepo = ref.watch(producRepoProvider);
-    return await productRepo.getProducts();
+    CancelToken cancelToken = CancelToken();
+    ref.onDispose(() {
+      log('ProductNotifier disposed and cancelToken canceled');
+      cancelToken.cancel ();
+    });
+     return await productRepo.getProducts();
   }
   Future<void> refreshProducts() async {
     state = const AsyncValue.loading();
@@ -24,4 +34,4 @@ class ProductNotifier extends AsyncNotifier<List<ProductEntity>> {
 }
 
 final productProvider = 
-AsyncNotifierProvider<ProductNotifier,List<ProductEntity>>(ProductNotifier.new);
+AsyncNotifierProvider.autoDispose<ProductNotifier,List<ProductEntity>>(ProductNotifier.new);

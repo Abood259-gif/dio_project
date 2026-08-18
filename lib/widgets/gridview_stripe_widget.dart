@@ -3,6 +3,7 @@ import 'package:dio_project/entities/product_entity.dart';
 import 'package:dio_project/provider/category_provider.dart';
 import 'package:dio_project/provider/filter_product_provider.dart';
 import 'package:dio_project/provider/product_provider.dart';
+import 'package:dio_project/screen/welcome_screen.dart';
 import 'package:dio_project/widgets/product_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -43,6 +44,10 @@ class GridviewStripeWidget extends ConsumerWidget {
               final ProductEntity product = productlist[index];
               return ProductCard(
                 onAddToCart: () {
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(builder: 
+                    (context) => WelcomeScreen()));
                   print('Adding product to cart: ${product.name}');
                 },
                 onTap: () {

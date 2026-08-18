@@ -20,7 +20,7 @@ final dioProvider = Provider<Dio>((ref) {
   );
  
     dio.interceptors.
-    addAll([LoggingInterceptor() ,  ErrorInterceptor() , RetryInterceptor(dio: dio)]);
+    addAll([LoggingInterceptor() , ErrorInterceptor() , RetryInterceptor(dio: dio)]);
   
   return dio;
 });

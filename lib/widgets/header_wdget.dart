@@ -1,5 +1,6 @@
 
 
+import 'package:dio_project/screen/welcome_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -41,10 +42,16 @@ class HeaderWdget extends StatelessWidget {
                           color: const Color(0xFF2D2D2D),
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Icon(
-                          Icons.tune,
-                          color: Colors.white,
-                          size: 26,
+                        child: GestureDetector(
+                        onTap: () =>  Navigator.pushReplacement(
+                    context, 
+                    MaterialPageRoute(builder: 
+                    (context) => WelcomeScreen())) ,
+                          child: const Icon(
+                            Icons.tune,
+                            color: Colors.white,
+                            size: 26,
+                          ),
                         ),
                       ),
                     ],

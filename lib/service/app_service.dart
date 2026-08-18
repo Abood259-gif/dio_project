@@ -6,9 +6,11 @@ import 'package:dio_project/models/product_model.dart';
 class AppService {
   final Dio dio;
   AppService({required this.dio});
-   Future<List<ProductModel>> fetchProducts() async {
+   Future<List<ProductModel>> fetchProducts({CancelToken? cancletoken}) async {
     try {
-      final response = await dio.get('products');
+      final response = await dio.get('products' ,
+                        cancelToken: cancletoken
+      );
         final List<dynamic> data = response.data;
         return data.map((json) => ProductModel.fromJson(json)).toList();
     } on DioException catch (e) {
