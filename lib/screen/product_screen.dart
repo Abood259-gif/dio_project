@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio_project/core/keys.dart';
 import 'package:dio_project/entities/product_entity.dart';
 import 'package:dio_project/provider/dio_provider.dart';
@@ -32,7 +34,7 @@ class ProductsScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final authStorage = storageProvider;
-          
+
           final dio = dioprovider;
 
           // 2. تخزين توكن منتهي الصلاحية عمداً بالـ Storage قبل إرسال الطلبات
@@ -45,15 +47,15 @@ class ProductsScreen extends ConsumerWidget {
 
           // 3. إرسال 3 طلبات متوازية في نفس اللحظة بـ Future.wait
           try {
-            final results = await Future.wait([
-              dio.get('https://api.escuelajs.co/api/v1/auth/profile'),
-              dio.get('https://api.escuelajs.co/api/v1/auth/profile'),
-              dio.get('https://api.escuelajs.co/api/v1/auth/profile'),
-            ]);
+          Future.wait([
+    dio.get('https://api.escuelajs.co/api/v1/auth/profile'),
+    dio.get('https://api.escuelajs.co/api/v1/auth/profile'),
+    dio.get('https://api.escuelajs.co/api/v1/auth/profile'),
+  ]);
 
-            print(
-              '✅ Success! Replayed ${results.length} requests successfully.',
-            );
+            // print(
+            //   '✅ Success! Replayed ${results.length} requests successfully.',
+            // );
           } catch (e) {
             print('❌ Request failed: $e');
           }

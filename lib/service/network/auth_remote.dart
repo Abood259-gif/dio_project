@@ -36,7 +36,7 @@ class AuthRemote {
     try {
       final response = await authDio.post(
         'refresh-token',
-        data: {ApiKeys.refreshToken : refreshToken},
+        data: {'refreshToken' : refreshToken},
       );
       return (
         accessToken: response.data[ApiKeys.accessToken] as String,

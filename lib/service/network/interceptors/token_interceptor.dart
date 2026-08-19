@@ -2,12 +2,15 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:dio_project/core/keys.dart';
+import 'package:dio_project/repository/auth_repository.dart';
 import 'package:dio_project/service/storge/auth_storage.dart';
 
 class AuthInterceptor extends QueuedInterceptor {
   final Dio _dio;
   final AuthStorage authStorage;
-  AuthInterceptor({required Dio dio, required this.authStorage}) : _dio = dio;
+  final AuthRepository authRepository;
+  AuthInterceptor({required Dio dio, 
+  required this.authStorage , required this.authRepository}) : _dio = dio;
   int _refreshCount = 0;
   @override
   Future<void> onRequest(
@@ -35,28 +38,10 @@ class AuthInterceptor extends QueuedInterceptor {
     if (response?.statusCode == 401 &&
         requestOptions.extra[StorageKeys.accessToken] ==
             await authStorage.getToken(StorageKeys.accessToken)) {
-      final refreshToken = await authStorage.getToken(StorageKeys.refreshToken);
-      log('🔄 REFRESH #${++_refreshCount}');
-      final responsRefresh = Dio(
-        BaseOptions(
-          baseUrl: 'https://api.escuelajs.co/api/v1/auth/',
-          connectTimeout: Duration(seconds: 5),
-          receiveTimeout: Duration(seconds: 3),
-          headers: {'Content-Type': 'application/json'},
-        ),
-      );
+                log('🔄 REFRESH #${++_refreshCount}');
       try {
-        final refreshResponse = await responsRefresh.post(
-          'refresh-token',
-          data: {'refreshToken': refreshToken},
-        );
-        final newAccessToken =
-            refreshResponse.data[ApiKeys.accessToken] as String;
-        final newRefreshToken =
-            refreshResponse.data[ApiKeys.refreshToken] as String;
-        await authStorage.saveToken(StorageKeys.accessToken, newAccessToken);
-        await authStorage.saveToken(StorageKeys.refreshToken, newRefreshToken);
-        log('the new access token is : $newAccessToken');
+     await   authRepository.refreshToken();
+        log('✅ REFRESHED #$_refreshCount');
       } on DioException catch (e) {
         return handler.next(e);
       }
