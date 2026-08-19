@@ -18,8 +18,8 @@ class AuthRemote {
         data: {'email': email, 'password': password},
       );
       return (
-        accessToken: response.data[Keys.accessToken] as String,
-        refreshToken: response.data[Keys.refreshToken] as String,
+        accessToken: response.data[ApiKeys.accessToken] as String,
+        refreshToken: response.data[ApiKeys.refreshToken] as String,
       );
     } on DioException catch (e) {
       throw Exception(e.message);
@@ -32,11 +32,11 @@ class AuthRemote {
     try {
       final response = await authDio.post(
         'refresh-token',
-        data: {Keys.refreshToken : refreshToken},
+        data: {ApiKeys.refreshToken : refreshToken},
       );
       return (
-        accessToken: response.data[Keys.accessToken] as String,
-        refreshToken: response.data[Keys.refreshToken] as String,
+        accessToken: response.data[ApiKeys.accessToken] as String,
+        refreshToken: response.data[ApiKeys.refreshToken] as String,
       );
     } on DioException catch (e) {
       throw Exception(e.message);

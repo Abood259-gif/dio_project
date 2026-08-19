@@ -19,7 +19,7 @@ class AuthInterceptor extends QueuedInterceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final accessToken = await authStorage.getToken(Keys.accessToken);
+    final accessToken = await authStorage.getToken(StorageKeys.accessToken);
 
     if (accessToken != null && accessToken.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $accessToken';
@@ -73,7 +73,7 @@ class AuthInterceptor extends QueuedInterceptor {
   Future<String?> _refreshYourToken() async {
     try {
       final refreshToken =
-          await authStorage.getToken(Keys.refreshToken);
+          await authStorage.getToken(StorageKeys.refreshToken);
 
       if (refreshToken == null || refreshToken.isEmpty) {
         return null;
@@ -98,13 +98,13 @@ class AuthInterceptor extends QueuedInterceptor {
         final newRefreshToken = response.data['refresh_token'];
 
         await authStorage.saveToken(
-          Keys.accessToken,
+          StorageKeys.accessToken,
           newAccessToken,
         );
 
         if (newRefreshToken != null) {
           await authStorage.saveToken(
-            Keys.refreshToken,
+            StorageKeys.refreshToken,
             newRefreshToken,
           );
         }
@@ -121,7 +121,7 @@ class AuthInterceptor extends QueuedInterceptor {
   }
 
   Future<void> _handleLogout() async {
-    await authStorage.deleteToken(Keys.accessToken);
-    await authStorage.deleteToken(Keys.refreshToken);
+    await authStorage.deleteToken(StorageKeys.accessToken);
+    await authStorage.deleteToken(StorageKeys.refreshToken);
   }
 }

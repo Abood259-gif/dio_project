@@ -8,7 +8,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   @override
   FutureOr<AuthState> build() async {
     final repo = ref.watch(authRepositoryProvider);
-    final token = await repo.authStorage.getToken(Keys.accessToken);
+    final token = await repo.authStorage.getToken(StorageKeys.accessToken);
 
     if (token != null && token.isNotEmpty) {
       return AuthAuthenticated();
@@ -30,8 +30,8 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final repo = ref.read(authRepositoryProvider);
-      await repo.authStorage.deleteToken(Keys.accessToken);
-      await repo.authStorage.deleteToken(Keys.refreshToken);
+      await repo.authStorage.deleteToken(StorageKeys.accessToken);
+      await repo.authStorage.deleteToken(StorageKeys.refreshToken);
       return AuthUnauthenticated();
     });
   }

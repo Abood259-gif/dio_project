@@ -12,16 +12,16 @@ class AuthRepository {
 
   Future<void> login({required String email, required String password}) async {
     final tokens = await authRemote.login(email: email, password: password);
-    await authStorage.saveToken(Keys.accessToken, tokens.accessToken);
-    await authStorage.saveToken(Keys.refreshToken, tokens.refreshToken);
+    await authStorage.saveToken(StorageKeys.accessToken, tokens.accessToken);
+    await authStorage.saveToken(StorageKeys.refreshToken, tokens.refreshToken);
   }
 
 Future<void> refreshToken() async {
-    final refreshToken = await authStorage.getToken(Keys.refreshToken);
+    final refreshToken = await authStorage.getToken(StorageKeys.refreshToken);
     if (refreshToken != null) {
       final tokens = await authRemote.refreshToken(refreshToken: refreshToken);
-      await authStorage.saveToken(Keys.accessToken, tokens.accessToken);
-      await authStorage.saveToken(Keys.refreshToken, tokens.refreshToken);
+      await authStorage.saveToken(StorageKeys.accessToken, tokens.accessToken);
+      await authStorage.saveToken(StorageKeys.refreshToken, tokens.refreshToken);
     } else {
       throw Exception('Refresh token not found');
     }
