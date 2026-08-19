@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:dio_project/core/keys.dart';
 import 'package:dio_project/provider/auth/auth_dio_provider.dart';
@@ -17,6 +19,8 @@ class AuthRemote {
         'login',
         data: {'email': email, 'password': password},
       );
+      log("accessToken ${response.data[ApiKeys.accessToken] as String}");
+      log("refreshToken ${response.data[ApiKeys.refreshToken] as String}");
       return (
         accessToken: response.data[ApiKeys.accessToken] as String,
         refreshToken: response.data[ApiKeys.refreshToken] as String,

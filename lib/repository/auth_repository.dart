@@ -14,6 +14,7 @@ class AuthRepository {
     final tokens = await authRemote.login(email: email, password: password);
     await authStorage.saveToken(StorageKeys.accessToken, tokens.accessToken);
     await authStorage.saveToken(StorageKeys.refreshToken, tokens.refreshToken);
+
   }
 
 Future<void> refreshToken() async {
@@ -28,7 +29,7 @@ Future<void> refreshToken() async {
   }
 
 Future<bool> isLoggedIn() async {
-    final token = await authStorage.getToken(StorageKeys.accessToken);
+    final token = await authStorage.getToken(StorageKeys.accessToken) ;
     return token != null && token.isNotEmpty;
   }
 
