@@ -26,6 +26,17 @@ Future<void> refreshToken() async {
       throw Exception('Refresh token not found');
     }
   }
+
+Future<bool> isLoggedIn() async {
+    final token = await authStorage.getToken(StorageKeys.accessToken);
+    return token != null && token.isNotEmpty;
+  }
+
+Future<void> logout() async {
+    await authStorage.deleteToken(StorageKeys.accessToken);
+    await authStorage.deleteToken(StorageKeys.refreshToken);
+  }
+
 }
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
