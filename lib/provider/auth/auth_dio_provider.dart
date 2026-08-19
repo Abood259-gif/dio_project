@@ -22,6 +22,6 @@ final dioAuthProvider = Provider<Dio>((ref) {
   );
 
   dio.interceptors.
-  addAll([LoggingInterceptor(), ErrorInterceptor() , AuthInterceptor(dio: dio, authStorage: storage)]);
+  addAll([LoggingInterceptor(), ErrorInterceptor()]);
   return dio;
 });
