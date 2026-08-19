@@ -23,5 +23,6 @@ final dioAuthProvider = Provider<Dio>((ref) {
 
   dio.interceptors.
   addAll([LoggingInterceptor(), ErrorInterceptor()]);
+   ref.onDispose(() => dio.close(force: true));
   return dio;
 });

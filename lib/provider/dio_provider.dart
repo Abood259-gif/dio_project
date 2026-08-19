@@ -19,18 +19,18 @@ final dioProvider = Provider<Dio>((ref) {
       },
     ),
   );
- 
-    dio.interceptors.
-    addAll(
-      [
-        // IMPORTANT: Interceptor order matters for onError handling.
-  // AuthInterceptor must come FIRST to handle 401 silent refresh 
-  // before ErrorInterceptor transforms/maps the raw DioException.
-      AuthInterceptor(dio: dio, authStorage: authStorage) , 
-      RetryInterceptor(dio: dio),
-      ErrorInterceptor() , 
-      LoggingInterceptor()
-      ]);
-  
+
+  dio.interceptors.addAll([
+    // IMPORTANT: Interceptor order matters for onError handling.
+    // AuthInterceptor must come FIRST to handle 401 silent refresh
+    // before ErrorInterceptor transforms/maps the raw DioException.
+    AuthInterceptor(dio: dio, authStorage: authStorage),
+    RetryInterceptor(dio: dio),
+    ErrorInterceptor(),
+    LoggingInterceptor(),
+  ]);
+
+  ref.onDispose(() => dio.close(force: true));
+
   return dio;
 });
