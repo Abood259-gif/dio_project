@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:dio_project/core/keys.dart';
-import 'package:dio_project/provider/auth/authe_state.dart';
+import 'package:dio_project/provider/auth/auth_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio_project/repository/auth_repository.dart';
 

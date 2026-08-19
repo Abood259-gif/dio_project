@@ -9,7 +9,7 @@ import 'package:dio_project/widgets/login_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio_project/provider/auth/authe_state.dart';
+import 'package:dio_project/provider/auth/auth_state.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
