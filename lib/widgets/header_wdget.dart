@@ -25,7 +25,7 @@ class HeaderWdget extends StatelessWidget {
                   Row(
                     children: [
                       const Expanded(
-                        child: Text(
+                        child: const Text(
                           'All Products',
                           style: TextStyle(
                             color: Colors.white,

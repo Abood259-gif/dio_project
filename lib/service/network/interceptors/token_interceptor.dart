@@ -50,6 +50,7 @@ class AuthInterceptor extends QueuedInterceptor {
       final newAccessToken = await authStorage.getToken(
         StorageKeys.accessToken,
       );
+       print('new access token: $newAccessToken');  ;
       final updateheder = Map<String, dynamic>.from(requestOptions.headers)
         ..['Authorization'] = 'Bearer $newAccessToken';
       final updateRequestOptions = requestOptions.copyWith(

@@ -1,4 +1,5 @@
-import 'dart:developer';
+
+
 
 import 'package:dio_project/core/keys.dart';
 import 'package:dio_project/entities/product_entity.dart';
@@ -48,14 +49,10 @@ class ProductsScreen extends ConsumerWidget {
           // 3. إرسال 3 طلبات متوازية في نفس اللحظة بـ Future.wait
           try {
           Future.wait([
-    dio.get('https://api.escuelajs.co/api/v1/auth/profile'),
-    dio.get('https://api.escuelajs.co/api/v1/auth/profile'),
-    dio.get('https://api.escuelajs.co/api/v1/auth/profile'),
+    dio.get('auth/profile'),
+    dio.get('auth/profile'),
+    dio.get('auth/profile'),
   ]);
-
-            // print(
-            //   '✅ Success! Replayed ${results.length} requests successfully.',
-            // );
           } catch (e) {
             print('❌ Request failed: $e');
           }
