@@ -1,12 +1,15 @@
 import 'package:dio/dio.dart';
-import 'package:dio_project/service/interceptors/error_interceptor.dart';
-import 'package:dio_project/service/interceptors/logging_interceptor.dart';
-import 'package:dio_project/service/interceptors/retry_interceptor.dart';
-import 'package:flutter/foundation.dart';
+import 'package:dio_project/repository/auth_repository.dart';
+import 'package:dio_project/service/network/interceptors/error_interceptor.dart';
+import 'package:dio_project/service/network/interceptors/logging_interceptor.dart';
+import 'package:dio_project/service/network/interceptors/retry_interceptor.dart';
+import 'package:dio_project/service/network/interceptors/token_interceptor.dart';
+import 'package:dio_project/service/storge/auth_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 final dioProvider = Provider<Dio>((ref) {
+  final authStorage = ref.watch(stroageprovider);
+  final authrepository = ref.watch(authRepositoryProvider);
   final dio = Dio(
     BaseOptions(
       baseUrl: 'https://api.escuelajs.co/api/v1/',
@@ -18,9 +21,18 @@ final dioProvider = Provider<Dio>((ref) {
       },
     ),
   );
- 
-    dio.interceptors.
-    addAll([LoggingInterceptor() , ErrorInterceptor() , RetryInterceptor(dio: dio)]);
-  
+
+  dio.interceptors.addAll([
+    // IMPORTANT: Interceptor order matters for onError handling.
+    // AuthInterceptor must come FIRST to handle 401 silent refresh
+    // before ErrorInterceptor transforms/maps the raw DioException.
+    AuthInterceptor(dio: dio, authStorage: authStorage , authRepository: authrepository),
+    RetryInterceptor(dio: dio),
+    ErrorInterceptor(),
+    LoggingInterceptor(),
+  ]);
+
+  ref.onDispose(() => dio.close(force: true));
+
   return dio;
 });
