@@ -8,11 +8,15 @@ class ProductCard extends StatelessWidget {
     required this.product,
     required this.onTap,
     required this.onAddToCart,
+    this.isFav,
+    this.onFavToggle,
   });
 
   final ProductEntity product;
   final VoidCallback onTap;
   final VoidCallback onAddToCart;
+  final bool? isFav;
+  final VoidCallback? onFavToggle;
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -67,18 +71,30 @@ class ProductCard extends StatelessWidget {
 
                     const SizedBox(height: 10),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              '\$${product.price.toStringAsFixed(0)}',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                                fontSize: priceFont,
-                              ),
+                        GestureDetector(
+                          onTap: () {
+                            if (onFavToggle != null) {
+                              onFavToggle!();
+                            }
+                          },
+                          child: Icon(
+                            Icons.favorite, 
+                            color: (isFav != null && isFav == false) ? 
+                            Colors.grey :
+                            (isFav != null && isFav == true) ?  Colors.red : Colors.grey, 
+                            size: isCompact ? 18 : 20),
+                        ),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            '\$${product.price.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontSize: priceFont,
                             ),
                           ),
                         ),

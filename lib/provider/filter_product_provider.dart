@@ -1,4 +1,4 @@
-import 'package:dio_project/entities/category_entity.dart';
+
 import 'package:dio_project/entities/product_entity.dart';
 import 'package:dio_project/provider/category_index.dart';
 import 'package:dio_project/provider/category_provider.dart';
@@ -13,7 +13,7 @@ final filteredProductsProvider = FutureProvider.autoDispose<List<ProductEntity>>
   final products = ref.watch(productProvider).value ?? [];
 
   if (categoryindex == 0 || categoryselected.isEmpty) {
-    return products;
+    return  products;
   }
   final data =  products
       .where((item) => item.category.id == categoryselected[categoryindex].id)
