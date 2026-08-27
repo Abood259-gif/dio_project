@@ -8,13 +8,14 @@ import 'package:dio_project/repository/product_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SearchProductsProvider extends BasePaginationProvider {
-  Timer? _debounceTimer;
   CancelToken? _cancelToken;
   String _searchQuery = '';
   @override
   Future<List<ProductEntity>> build() async {
     _searchQuery = ref.watch(searchQueryProvider);
-    super.offset = 0;
+    ref.onDispose(() {
+      _cancelToken?.cancel('Provider disposed');
+    });
     return super.build();
   }
 

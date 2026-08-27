@@ -41,7 +41,7 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent + 200) {
+        _scrollController.position.maxScrollExtent - 50) {
       widget.getProducts();
     }
   }
@@ -56,6 +56,8 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
   @override
   Widget build(BuildContext context) {
     return widget.productProvider.when(
+      skipError: true,
+      skipLoadingOnReload: true,
       data: (productlist) {
         if (productlist.isEmpty) {
           return const Center(
@@ -86,13 +88,16 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
                       try{
                         await ref.read(favoriteProductsProvider.notifier).toggleFav(product.id);
                       } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        if(!context.mounted) return;
+                        final massage = ScaffoldMessenger.of(context);
+                        massage.hideCurrentSnackBar();
+                        massage.showSnackBar(
                           SnackBar(
-                            content: Text('Failed to toggle favorite: $e'),
+                            content: Text('Failed to update favorite. Please try again.'),
                           ),
                         );
                       }
-                      ref.read(favoriteProductsProvider.notifier).toggleFav(product.id);
+                    
                     },
                     onAddToCart: () {
                       Navigator.push(

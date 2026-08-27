@@ -1,4 +1,5 @@
 import 'package:dio_project/entities/product_entity.dart';
+import 'package:dio_project/repository/product_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 abstract class BasePaginationProvider
@@ -8,7 +9,6 @@ abstract class BasePaginationProvider
   bool _hasMore = true;
   bool _isFetching = false;
 bool get hasMore => _hasMore;
-set offset(int value) => _offset = value;
   Future<List<ProductEntity>> fetchitems({
     required int offiset,
     required int limit,
@@ -17,6 +17,9 @@ set offset(int value) => _offset = value;
 
   @override
   Future<List<ProductEntity>> build() async {
+    _offset = 0;
+    _hasMore = true;
+    _isFetching = false;
     ref.onDispose(() {
       print('ProductsProvider was closed successfully!');
     });
@@ -35,11 +38,11 @@ set offset(int value) => _offset = value;
     if (!_hasMore || state.isLoading || _isFetching) return;
     _isFetching = true;
     state =  const AsyncLoading<List<ProductEntity>>().copyWithPrevious(state);
-    final products = await fetchitems(
+    try {
+       final products = await fetchitems(
       offiset: _offset,
       limit: _limit
     );
-    try {
       if (products.isEmpty || products.length < _limit) {
         _hasMore = false;
       }
@@ -57,4 +60,19 @@ set offset(int value) => _offset = value;
       _isFetching = false;
     }
   }
+
+ Future<void> refreshProducts() async {
+  _offset = 0;
+  _hasMore = true;
+  _isFetching = false;
+    state = const AsyncValue.loading();
+    try {
+      final productRepo = ref.read(producRepoProvider);
+      final products = await productRepo.getPaginatedProducts(offset: _offset, limit: _limit);
+      state = AsyncValue.data(products);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
 }
