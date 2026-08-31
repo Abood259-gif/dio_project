@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:dio_project/app_routs.dart';
 import 'package:dio_project/provider/auth/auth_provider.dart';
 import 'package:dio_project/provider/search_products_provider.dart';
+import 'package:dio_project/provider/upload_image_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 class HeaderWdget extends ConsumerStatefulWidget {
   const HeaderWdget({super.key});
@@ -25,14 +27,44 @@ class HeaderWdgetState extends ConsumerState<HeaderWdget> {
     });
   }
 
+  Future<void> _handleImagePick() async {
+    final picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+
+    if (pickedFile == null) return;
+
+    final bytes = await pickedFile.readAsBytes();
+    await ref.read(authNotifierProvider.notifier).updateProfileImage(bytes);
+  }
+
   @override
   void dispose() {
     _debounceTimer?.cancel();
+    _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authNotifierProvider);
+   final userState = ref.watch(userStateChangesProvider);
+    
+    // Read the current user's photo URL from the stream
+    final userPhotoUrl = userState.value?.photoUrl;
+    final isLoading = authState.isLoading;
+
+    // Show SnackBars on errors automatically
+    ref.listen<AsyncValue<void>>(authNotifierProvider, (previous, next) {
+      if (next.hasError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Operation failed: ${next.error}')),
+        );
+      }
+    });
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,6 +91,43 @@ class HeaderWdgetState extends ConsumerState<HeaderWdget> {
                 ),
               ),
             ),
+            
+            // Profile Image CircleAvatar
+            GestureDetector(
+              onTap: isLoading ? null : _handleImagePick,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundColor: const Color(0xFF2D2D2D),
+                    backgroundImage: userPhotoUrl != null && userPhotoUrl.isNotEmpty
+                        ? NetworkImage(userPhotoUrl)
+                        : null,
+                    child: userPhotoUrl == null || userPhotoUrl.isEmpty
+                        ? const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 26,
+                          )
+                        : null,
+                  ),
+                  if (isLoading)
+                    const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 10),
+
+            // Logout Button
             Container(
               height: 52,
               width: 52,
@@ -111,8 +180,6 @@ class HeaderWdgetState extends ConsumerState<HeaderWdget> {
                     ),
                   );
                   if (confirmed == true && mounted) {
-                    // Navigate first, then logout in background to avoid
-                    // BuildContext across async gap warning
                     context.go(AppRouter.login);
                     ref.read(authNotifierProvider.notifier).logout();
                   }

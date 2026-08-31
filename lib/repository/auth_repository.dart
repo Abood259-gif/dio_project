@@ -17,6 +17,10 @@ class AuthRepository {
     return _firebaseAuth.authStateChanges().map(_convertUser);
   }
 
+  Stream<AppUser?> userStateChanges() {
+    return _firebaseAuth.userChanges().map(_convertUser);
+  }
+
   User? get currentUser => _firebaseAuth.currentUser;
 
   AppUser? get currentAppUser => _convertUser(currentUser);
@@ -82,6 +86,24 @@ class AuthRepository {
   Future<void> sendPasswordResetEmail({required String email}) async {
     try {
       await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw AuthException.fromFirebaseCode(e.code, e.message);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw UnknownException(e.toString());
+    }
+  }
+
+  /// Updates the current user's photo URL in Firebase Auth
+  Future<void> updateProfileImage(String photoUrl) async {
+    try {
+      final user = currentUser;
+      if (user == null) {
+        throw ('No user signed in');
+      }
+
+      await user.updatePhotoURL(photoUrl);
+      await user.reload(); // Refresh local user state
     } on FirebaseAuthException catch (e) {
       throw AuthException.fromFirebaseCode(e.code, e.message);
     } catch (e) {

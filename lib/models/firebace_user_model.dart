@@ -6,12 +6,14 @@ class AppUser {
     this.email,
     this.emailVerified = false,
     this.displayName,
+    this.photoUrl,
   });
 
   final String uid;
   final String? email;
   final bool emailVerified;
   final String? displayName;
+  final String? photoUrl;
 
   static AppUser? fromUser(User? user) {
     if (user == null) {
@@ -22,6 +24,7 @@ class AppUser {
       email: user.email,
       displayName: user.displayName,
       emailVerified: user.emailVerified,
+      photoUrl: user.photoURL,
     );
   }
 }

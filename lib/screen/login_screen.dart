@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:dio_project/app_routs.dart';
 import 'package:dio_project/provider/auth/auth_provider.dart';
+import 'package:dio_project/provider/fcm_provider.dart';
 import 'package:dio_project/widgets/login_button.dart';
 import 'package:dio_project/widgets/login_card.dart';
 import 'package:dio_project/widgets/login_heder.dart';
@@ -209,7 +212,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         else
                           LoginPrimaryButton(
                             text: 'Sign in',
-                            onPressed: () {
+                            onPressed: () async {
+                
                               final email = _emailController.text.trim();
                               final password = _passwordController.text.trim();
 
