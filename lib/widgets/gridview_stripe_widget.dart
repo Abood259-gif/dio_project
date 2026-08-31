@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:dio_project/entities/category_entity.dart';
+import 'package:dio_project/entities/favorites_entity.dart';
 import 'package:dio_project/entities/product_entity.dart';
 import 'package:dio_project/provider/category_provider.dart';
 import 'package:dio_project/provider/fav_provider.dart';
@@ -33,6 +34,7 @@ class GridviewStripeWidget extends ConsumerStatefulWidget {
 
 class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
   final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -55,9 +57,22 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // TEMP DEBUG — remove once favorites work, tells us exactly why a toggle failed
+    ref.listen(favoriteActionsProvider, (previous, next) {
+      if (next.hasError) {
+        log('FAVORITE TOGGLE FAILED: ${next.error}');
+      }
+    });
+
+    final favoriteIds = ref
+            .watch(favoritesProvider)
+            .value
+            ?.map((f) => f.productId)
+            .toSet() ??
+        <String>{};
+
     return widget.productProvider.when(
       skipError: true,
-      skipLoadingOnReload: true,
       data: (productlist) {
         if (productlist.isEmpty) {
           return const Center(
@@ -81,30 +96,39 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
                 ),
                 itemBuilder: (context, index) {
                   final ProductEntity product = productlist[index];
+                  final isFav = favoriteIds.contains(product.id.toString());
+
                   return ProductCard(
-                    isFav:
-                        ref.watch(favoriteProductsProvider).value?.contains(product.id) ,
+                    isFav: isFav,
                     onFavToggle: () async {
-                      try{
-                        await ref.read(favoriteProductsProvider.notifier).toggleFav(product.id);
-                      } catch (e) {
-                        if(!context.mounted) return;
-                        final massage = ScaffoldMessenger.of(context);
-                        massage.hideCurrentSnackBar();
-                        massage.showSnackBar(
-                          SnackBar(
-                            content: Text('Failed to update favorite. Please try again.'),
-                          ),
-                        );
-                      }
-                    
+                      final favorite = FavoriteEntity(
+                        productId: product.id.toString(),
+                        title: product.name,
+                        image:
+                            product.images.isNotEmpty ? product.images.first : '',
+                        price: product.price,
+                      );
+                      await ref
+                          .read(favoriteActionsProvider.notifier)
+                          .toggleFavorite(favorite);
+
+                      final actionState = ref.read(favoriteActionsProvider);
+                      // if (actionState.hasError && context.mounted) {
+                      //   final messenger = ScaffoldMessenger.of(context);
+                      //   messenger.hideCurrentSnackBar();
+                      //   messenger.showSnackBar(
+                      //     const SnackBar(
+                      //       content: Text(
+                      //         'Failed to update favorite. Please try again.',
+                      //       ),
+                      //     ),
+                      //   );
+                      // }
                     },
                     onAddToCart: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => WelcomeScreen(),
-                        ),
+                        MaterialPageRoute(builder: (context) => WelcomeScreen()),
                       );
                     },
                     onTap: () {},
@@ -119,14 +143,14 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
                     child: CircularProgressIndicator(),
                   )
                 : (!widget.hasmore
-                      ? const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: Text(
-                            'No more products to load.',
-                            style: TextStyle(color: Colors.white, fontSize: 16),
-                          ),
-                        )
-                      : const SizedBox.shrink()),
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Text(
+                          'No more products to load.',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      )
+                    : const SizedBox.shrink()),
           ],
         );
       },
