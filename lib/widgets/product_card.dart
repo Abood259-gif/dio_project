@@ -6,15 +6,15 @@ class ProductCard extends StatelessWidget {
   const ProductCard({
     super.key,
     required this.product,
-    required this.onTap,
-    required this.onAddToCart,
+    this.onTap,
+    this.onAddToCart,
     this.isFav,
     this.onFavToggle,
   });
 
   final ProductEntity product;
-  final VoidCallback onTap;
-  final VoidCallback onAddToCart;
+  final VoidCallback? onTap;
+  final VoidCallback? onAddToCart;
   final bool? isFav;
   final VoidCallback? onFavToggle;
   @override
@@ -38,15 +38,32 @@ class ProductCard extends StatelessWidget {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    onTap();
+                    onTap?.call();
                   },
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final cacheWidth = (constraints.maxWidth * MediaQuery.devicePixelRatioOf(context)).round();
+                      final devicePixelRatio = MediaQuery.devicePixelRatioOf(
+                        context,
+                      );
+                      final cacheWidth =
+                          (constraints.maxWidth * devicePixelRatio)
+                              .round()
+                              .clamp(1, 768);
+                      final cacheHeight =
+                          (constraints.maxHeight * devicePixelRatio)
+                              .round()
+                              .clamp(1, 768);
                       return CachedNetworkImage(
                         memCacheWidth: cacheWidth,
+                        memCacheHeight: cacheHeight,
+                        maxWidthDiskCache: cacheWidth,
+                        maxHeightDiskCache: cacheHeight,
+                        fadeInDuration: Duration.zero,
+                        fadeOutDuration: Duration.zero,
                         fit: BoxFit.cover,
-                        imageUrl: product.images.firstOrNull ?? 'https://via.placeholder.com/150',
+                        imageUrl:
+                            product.images.firstOrNull ??
+                            'https://via.placeholder.com/150',
                       );
                     },
                   ),
@@ -80,11 +97,14 @@ class ProductCard extends StatelessWidget {
                             }
                           },
                           child: Icon(
-                            Icons.favorite, 
-                            color: (isFav != null && isFav == false) ? 
-                            Colors.grey :
-                            (isFav != null && isFav == true) ?  Colors.red : Colors.grey, 
-                            size: isCompact ? 18 : 20),
+                            Icons.favorite,
+                            color: (isFav != null && isFav == false)
+                                ? Colors.grey
+                                : (isFav != null && isFav == true)
+                                ? Colors.red
+                                : Colors.grey,
+                            size: isCompact ? 18 : 20,
+                          ),
                         ),
                         FittedBox(
                           fit: BoxFit.scaleDown,
@@ -101,7 +121,7 @@ class ProductCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         GestureDetector(
                           onTap: () {
-                            onAddToCart();
+                            onAddToCart?.call();
                           },
                           child: Container(
                             height: addButtonSize,

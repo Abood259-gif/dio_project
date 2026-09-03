@@ -36,7 +36,7 @@ class SearchProductsProvider extends BasePaginationProvider {
       offset: offiset,
       limit: limit,
       searchQuery: _searchQuery,
-      canceltoken: _cancelToken
+      canceltoken: _cancelToken,
     );
   }
 }
@@ -47,4 +47,4 @@ final searchProductsProvider =
       List<ProductEntity>
     >(SearchProductsProvider.new);
 
-final searchQueryProvider = StateProvider<String>((ref) => '');
+final searchQueryProvider = StateProvider.autoDispose<String>((ref) => '');

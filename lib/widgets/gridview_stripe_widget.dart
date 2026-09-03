@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:dio_project/entities/category_entity.dart';
+import 'package:dio_project/entities/favorites_entity.dart';
 import 'package:dio_project/entities/product_entity.dart';
 import 'package:dio_project/provider/category_provider.dart';
 import 'package:dio_project/provider/fav_provider.dart';
@@ -9,6 +10,7 @@ import 'package:dio_project/screen/welcome_screen.dart';
 import 'package:dio_project/widgets/product_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/rendering.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class GridviewStripeWidget extends ConsumerStatefulWidget {
@@ -33,6 +35,7 @@ class GridviewStripeWidget extends ConsumerStatefulWidget {
 
 class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
   final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +43,7 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
   }
 
   void _onScroll() {
+    if (!widget.hasmore || widget.productProvider.isLoading) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 50) {
       widget.getProducts();
@@ -55,9 +59,19 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // TEMP DEBUG — remove once favorites work, tells us exactly why a toggle failed
+    ref.listen(favoriteActionsProvider, (previous, next) {
+      if (next.hasError) {
+        log('FAVORITE TOGGLE FAILED: ${next.error}');
+      }
+    });
+
+    final favoriteIds =
+        ref.watch(favoritesProvider).value?.map((f) => f.productId).toSet() ??
+        <String>{};
+
     return widget.productProvider.when(
       skipError: true,
-      skipLoadingOnReload: true,
       data: (productlist) {
         if (productlist.isEmpty) {
           return const Center(
@@ -72,6 +86,8 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
             Expanded(
               child: GridView.builder(
                 controller: _scrollController,
+                scrollCacheExtent: ScrollCacheExtent.pixels(300),
+                addAutomaticKeepAlives: false,
                 itemCount: productlist.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: widget.columns,
@@ -81,23 +97,35 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
                 ),
                 itemBuilder: (context, index) {
                   final ProductEntity product = productlist[index];
+                  final isFav = favoriteIds.contains(product.id.toString());
+
                   return ProductCard(
-                    isFav:
-                        ref.watch(favoriteProductsProvider).value?.contains(product.id) ,
+                    isFav: isFav,
                     onFavToggle: () async {
-                      try{
-                        await ref.read(favoriteProductsProvider.notifier).toggleFav(product.id);
-                      } catch (e) {
-                        if(!context.mounted) return;
-                        final massage = ScaffoldMessenger.of(context);
-                        massage.hideCurrentSnackBar();
-                        massage.showSnackBar(
-                          SnackBar(
-                            content: Text('Failed to update favorite. Please try again.'),
+                      final favorite = FavoriteEntity(
+                        productId: product.id.toString(),
+                        title: product.name,
+                        image: product.images.isNotEmpty
+                            ? product.images.first
+                            : '',
+                        price: product.price,
+                      );
+                      await ref
+                          .read(favoriteActionsProvider.notifier)
+                          .toggleFavorite(favorite);
+
+                      final actionState = ref.read(favoriteActionsProvider);
+                      if (actionState.hasError && context.mounted) {
+                        final messenger = ScaffoldMessenger.of(context);
+                        messenger.hideCurrentSnackBar();
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Failed to update favorite. Please try again.',
+                            ),
                           ),
                         );
                       }
-                    
                     },
                     onAddToCart: () {
                       Navigator.push(
@@ -134,6 +162,8 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
         enabled: true,
         child: GridView.builder(
           itemCount: 6,
+          scrollCacheExtent: ScrollCacheExtent.pixels(300),
+          addAutomaticKeepAlives: false,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: widget.columns,
             crossAxisSpacing: widget.isNarrow ? 10 : 12,
@@ -141,9 +171,7 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
             childAspectRatio: widget.isNarrow ? 0.64 : 0.68,
           ),
           itemBuilder: (context, index) {
-            return ProductCard(
-              onAddToCart: () {},
-              onTap: () {},
+            return const ProductCard(
               product: ProductEntity(
                 id: 1,
                 name: 'اسم منتج وهمي للعرض فقط',

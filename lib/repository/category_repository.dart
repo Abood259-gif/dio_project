@@ -15,7 +15,8 @@ class CategoryRepository {
     return data;
   }
 }
-final categoryRepoProvider = Provider<CategoryRepository>((ref) {
+
+final categoryRepoProvider = Provider.autoDispose<CategoryRepository>((ref) {
   final dio = ref.watch(dioProvider);
   return CategoryRepository(appService: AppService(dio: dio));
 });

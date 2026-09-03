@@ -29,7 +29,7 @@ class ProducRepo implements ProductRepositoryInterface {
       limit: limit,
       searchQuery: searchQuery,
       categoryId: categoryId,
-      cancletoken: canceltoken
+      cancletoken: canceltoken,
     );
     final List<ProductEntity> productEntities = products
         .map((productModel) => productModel.toEntity())
@@ -37,7 +37,7 @@ class ProducRepo implements ProductRepositoryInterface {
     return productEntities;
   }
 
-Future<ProductEntity> getProductById(
+  Future<ProductEntity> getProductById(
     int productId, {
     CancelToken? cancletoken,
   }) async {
@@ -47,10 +47,9 @@ Future<ProductEntity> getProductById(
     );
     return product.toEntity();
   }
-
 }
 
-final producRepoProvider = Provider<ProducRepo>((ref) {
+final producRepoProvider = Provider.autoDispose<ProducRepo>((ref) {
   final dio = ref.watch(dioProvider);
   return ProducRepo(appser: AppService(dio: dio));
 });

@@ -6,7 +6,6 @@ sealed class AuthState {
 
 
 class AuthAuthenticated extends AuthState {
- 
   const AuthAuthenticated();
 }
 

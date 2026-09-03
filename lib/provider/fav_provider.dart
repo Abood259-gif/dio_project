@@ -1,36 +1,42 @@
 import 'dart:async';
 
-import 'package:dio_project/repository/product_repository.dart';
+import 'package:dio_project/entities/favorites_entity.dart';
+import 'package:dio_project/repository/favorites_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class FavNotifier extends AutoDisposeAsyncNotifier<Set<int>> {
+class FavoriteActions extends AutoDisposeAsyncNotifier<void> {
   @override
-  FutureOr<Set<int>> build() {
-    return {};
+  Future<void> build() async {
+    // no initial state to load — actions only
   }
 
-  Future<void> toggleFav(int productId) async {
-    final currentFavs = state.value ?? {};
-    final isFav = currentFavs.contains(productId);
-  final updatedFavs = Set<int>.from(currentFavs);
-    if (isFav) {
-      updatedFavs.remove(productId);
-    } else {
-      updatedFavs.add(productId);
-    }
-    state = AsyncValue.data(updatedFavs);
-    try {
-      
-      await ref.read(producRepoProvider).getProductById(productId);
-      
-    } catch (e) {
-      state = AsyncData(currentFavs);
-      rethrow; 
-    }
-  }
+  Future<void> toggleFavorite(FavoriteEntity favorite) async {
+    final repository = ref.read(favoritesRepositoryProvider);
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() => repository.toggleFavorite(favorite));
   }
 
-final favoriteProductsProvider =
-    AsyncNotifierProvider.autoDispose<FavNotifier, Set<int>>(
- FavNotifier.new,
-);
+  Future<void> addFavorite(FavoriteEntity favorite) async {
+    final repository = ref.read(favoritesRepositoryProvider);
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() => repository.addFavorite(favorite));
+  }
+
+  Future<void> removeFavorite(String productId) async {
+    final repository = ref.read(favoritesRepositoryProvider);
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() => repository.removeFavorite(productId));
+  }
+}
+
+final favoriteActionsProvider =
+    AsyncNotifierProvider.autoDispose<FavoriteActions, void>(
+      FavoriteActions.new,
+    );
+
+final favoritesProvider = StreamProvider.autoDispose<List<FavoriteEntity>>((
+  ref,
+) {
+  final repository = ref.watch(favoritesRepositoryProvider);
+  return repository.watchFavorites();
+});

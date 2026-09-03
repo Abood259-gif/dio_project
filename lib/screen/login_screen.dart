@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:dio_project/app_routs.dart';
 import 'package:dio_project/provider/auth/auth_provider.dart';
+import 'package:dio_project/provider/fcm_provider.dart';
 import 'package:dio_project/widgets/login_button.dart';
 import 'package:dio_project/widgets/login_card.dart';
 import 'package:dio_project/widgets/login_heder.dart';
@@ -9,7 +12,6 @@ import 'package:dio_project/widgets/login_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio_project/provider/auth/auth_state.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -29,24 +31,99 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
+  void _showForgotPasswordDialog() {
+    final resetEmailController = TextEditingController(
+      text: _emailController.text.trim(),
+    );
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2A2A2A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Reset Password',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Enter your email address and we\'ll send you a link to reset your password.',
+                style: TextStyle(color: Color(0xFFB0B0B0), fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              LoginTextField(
+                label: 'Email address',
+                hintText: 'you@example.com',
+                controller: resetEmailController,
+                keyboardType: TextInputType.emailAddress,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Color(0xFFB0B0B0)),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final email = resetEmailController.text.trim();
+                if (email.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter your email')),
+                  );
+                  return;
+                }
+                Navigator.of(ctx).pop();
+                await ref
+                    .read(authNotifierProvider.notifier)
+                    .sendPasswordResetEmail(email: email);
+                if (mounted && !ref.read(authNotifierProvider).hasError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Password reset email sent! Check your inbox.',
+                      ),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2F66E4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Send Link',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    ref.listen<AsyncValue<AuthState>>(authNotifierProvider, (previous, next) {
-      next.whenOrNull(
-        error: (error, stackTrace) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(error.toString()),
-              backgroundColor: Colors.red,
-            ),
-          );
-        },
-        data: (state) {
-          if (state is AuthAuthenticated) {
-            context.go(AppRouter.productsRoute);
-          }
-        },
-      );
+    ref.listen<AsyncValue<void>>(authNotifierProvider, (previous, next) {
+      if (next.hasError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     });
 
     final authState = ref.watch(authNotifierProvider);
@@ -58,7 +135,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           final bool isCompact = constraints.maxWidth < 460;
           final bool isVeryNarrow = constraints.maxWidth < 360;
           final double maxCardWidth = constraints.maxWidth > 900 ? 600 : 540;
-          
+
           return SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -102,7 +179,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                             const Spacer(),
                             TextButton(
-                              onPressed: () {},
+                              onPressed: _showForgotPasswordDialog,
                               style: TextButton.styleFrom(
                                 foregroundColor: const Color(0xFF2F66E4),
                                 padding: EdgeInsets.zero,
@@ -135,19 +212,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         else
                           LoginPrimaryButton(
                             text: 'Sign in',
-                            onPressed: () {
+                            onPressed: () async {
+                
                               final email = _emailController.text.trim();
                               final password = _passwordController.text.trim();
 
                               if (email.isNotEmpty && password.isNotEmpty) {
-                                ref.read(authNotifierProvider.notifier).login(
-                                      email: email,
-                                      password: password,
-                                    );
+                                ref
+                                    .read(authNotifierProvider.notifier)
+                                    .login(email: email, password: password);
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Please enter both email and password'),
+                                    content: Text(
+                                      'Please enter both email and password',
+                                    ),
                                   ),
                                 );
                               }
@@ -166,7 +245,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              ref
+                                  .read(authNotifierProvider.notifier)
+                                  .signInWithGoogle();
+                            },
                           ),
                           const SizedBox(height: 12),
                           LoginSocialButton(
@@ -187,7 +270,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    ref
+                                        .read(authNotifierProvider.notifier)
+                                        .signInWithGoogle();
+                                  },
                                 ),
                               ),
                               const SizedBox(width: 14),
@@ -205,7 +292,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         Center(
                           child: GestureDetector(
                             onTap: () {
-                             
+                              context.go(AppRouter.signup);
                             },
                             child: Text.rich(
                               TextSpan(

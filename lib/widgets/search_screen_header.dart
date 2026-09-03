@@ -1,47 +1,21 @@
 import 'package:dio_project/app_routs.dart';
 import 'package:dio_project/provider/auth/auth_provider.dart';
 import 'package:dio_project/provider/upload_image_provider.dart';
-import 'package:dio_project/widgets/search_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
-class HeaderWdget extends ConsumerStatefulWidget {
-  const HeaderWdget({super.key});
-  @override
-  ConsumerState<HeaderWdget> createState() => HeaderWdgetState();
-}
-
-class HeaderWdgetState extends ConsumerState<HeaderWdget> {
-  Future<void> _handleImagePick() async {
-    final picker = ImagePicker();
-    final XFile? pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 80,
-    );
-
-    if (pickedFile == null) return;
-
-    final bytes = await pickedFile.readAsBytes();
-    await ref.read(authNotifierProvider.notifier).updateProfileImage(bytes);
-  }
+class SearchScreenHeader extends ConsumerWidget {
+  const SearchScreenHeader({super.key});
 
   @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authNotifierProvider);
     final userState = ref.watch(userStateChangesProvider);
-
-    // Read the current user's photo URL from the stream
     final userPhotoUrl = userState.value?.photoUrl;
     final isLoading = authState.isLoading;
 
-    // Show SnackBars on errors automatically
     ref.listen<AsyncValue<void>>(authNotifierProvider, (previous, next) {
       if (next.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -51,7 +25,6 @@ class HeaderWdgetState extends ConsumerState<HeaderWdget> {
     });
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
@@ -67,7 +40,7 @@ class HeaderWdgetState extends ConsumerState<HeaderWdget> {
           children: [
             const Expanded(
               child: Text(
-                'All Products',
+                'Search',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 42,
@@ -76,10 +49,23 @@ class HeaderWdgetState extends ConsumerState<HeaderWdget> {
                 ),
               ),
             ),
-
-            // Profile Image CircleAvatar
             GestureDetector(
-              onTap: isLoading ? null : _handleImagePick,
+              onTap: isLoading
+                  ? null
+                  : () async {
+                      final picker = ImagePicker();
+                      final XFile? pickedFile = await picker.pickImage(
+                        source: ImageSource.gallery,
+                        imageQuality: 80,
+                      );
+
+                      if (pickedFile == null) return;
+
+                      final bytes = await pickedFile.readAsBytes();
+                      await ref
+                          .read(authNotifierProvider.notifier)
+                          .updateProfileImage(bytes);
+                    },
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -110,10 +96,7 @@ class HeaderWdgetState extends ConsumerState<HeaderWdget> {
                 ],
               ),
             ),
-
             const SizedBox(width: 10),
-
-            // Logout Button
             Container(
               height: 52,
               width: 52,
@@ -165,7 +148,8 @@ class HeaderWdgetState extends ConsumerState<HeaderWdget> {
                       ],
                     ),
                   );
-                  if (confirmed == true && mounted) {
+
+                  if (confirmed == true && context.mounted) {
                     context.go(AppRouter.login);
                     ref.read(authNotifierProvider.notifier).logout();
                   }
@@ -178,13 +162,6 @@ class HeaderWdgetState extends ConsumerState<HeaderWdget> {
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 18),
-        SearchTextField(
-          readOnly: true,
-          onTap: () {
-            context.push(AppRouter.searchRoute);
-          },
         ),
       ],
     );
