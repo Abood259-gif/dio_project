@@ -7,7 +7,7 @@ import 'package:dio_project/service/network/interceptors/token_interceptor.dart'
 import 'package:dio_project/service/storge/auth_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final dioProvider = Provider<Dio>((ref) {
+final dioProvider = Provider.autoDispose<Dio>((ref) {
   final authStorage = ref.watch(stroageprovider);
   final authrepository = ref.watch(authRepositoryProvider);
   final dio = Dio(
@@ -26,7 +26,11 @@ final dioProvider = Provider<Dio>((ref) {
     // IMPORTANT: Interceptor order matters for onError handling.
     // AuthInterceptor must come FIRST to handle 401 silent refresh
     // before ErrorInterceptor transforms/maps the raw DioException.
-    AuthInterceptor(dio: dio, authStorage: authStorage , authRepository: authrepository),
+    AuthInterceptor(
+      dio: dio,
+      authStorage: authStorage,
+      authRepository: authrepository,
+    ),
     RetryInterceptor(dio: dio),
     ErrorInterceptor(),
     LoggingInterceptor(),

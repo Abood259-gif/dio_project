@@ -4,6 +4,7 @@ import 'package:dio_project/models/favorites_model.dart';
 import 'package:dio_project/repository/auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 class FavoritesRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _firebaseAuth;
@@ -11,8 +12,8 @@ class FavoritesRepository {
   FavoritesRepository({
     required FirebaseFirestore firestore,
     required FirebaseAuth firebaseAuth,
-  })  : _firestore = firestore,
-        _firebaseAuth = firebaseAuth;
+  }) : _firestore = firestore,
+       _firebaseAuth = firebaseAuth;
 
   CollectionReference<Map<String, dynamic>> _favoritesRef() {
     final uid = _firebaseAuth.currentUser?.uid;
@@ -30,7 +31,6 @@ class FavoritesRepository {
           .toList();
     });
   }
-
 
   Future<void> addFavorite(FavoriteEntity favorite) async {
     final model = FavoriteModel(
@@ -69,16 +69,15 @@ class FavoritesRepository {
 }
 
 /// Provider for FirebaseFirestore instance
-final firestoreProvider = Provider<FirebaseFirestore>((ref) {
+final firestoreProvider = Provider.autoDispose<FirebaseFirestore>((ref) {
   return FirebaseFirestore.instance;
 });
 
 /// Provider for FavoritesRepository
-final favoritesRepositoryProvider = Provider<FavoritesRepository>((ref) {
+final favoritesRepositoryProvider = Provider.autoDispose<FavoritesRepository>((
+  ref,
+) {
   final firestore = ref.watch(firestoreProvider);
   final firebaseAuth = ref.watch(firebaseAuthProvider);
-  return FavoritesRepository(
-    firestore: firestore,
-    firebaseAuth: firebaseAuth,
-  );
+  return FavoritesRepository(firestore: firestore, firebaseAuth: firebaseAuth);
 });

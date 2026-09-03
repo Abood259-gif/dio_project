@@ -4,7 +4,7 @@ import 'package:dio_project/entities/favorites_entity.dart';
 import 'package:dio_project/repository/favorites_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class FavoriteActions extends AsyncNotifier<void> {
+class FavoriteActions extends AutoDisposeAsyncNotifier<void> {
   @override
   Future<void> build() async {
     // no initial state to load — actions only
@@ -30,9 +30,13 @@ class FavoriteActions extends AsyncNotifier<void> {
 }
 
 final favoriteActionsProvider =
-    AsyncNotifierProvider<FavoriteActions, void>(FavoriteActions.new);
+    AsyncNotifierProvider.autoDispose<FavoriteActions, void>(
+      FavoriteActions.new,
+    );
 
-final favoritesProvider = StreamProvider<List<FavoriteEntity>>((ref) {
+final favoritesProvider = StreamProvider.autoDispose<List<FavoriteEntity>>((
+  ref,
+) {
   final repository = ref.watch(favoritesRepositoryProvider);
   return repository.watchFavorites();
 });

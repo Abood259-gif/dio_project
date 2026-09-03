@@ -1,11 +1,9 @@
-
-
 import 'package:dio/dio.dart';
 import 'package:dio_project/service/network/interceptors/error_interceptor.dart';
 import 'package:dio_project/service/network/interceptors/logging_interceptor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final dioAuthProvider = Provider<Dio>((ref) {
+final dioAuthProvider = Provider.autoDispose<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
       baseUrl: 'https://api.escuelajs.co/api/v1/auth/',
@@ -18,8 +16,7 @@ final dioAuthProvider = Provider<Dio>((ref) {
     ),
   );
 
-  dio.interceptors.
-  addAll([LoggingInterceptor(), ErrorInterceptor()]);
-   ref.onDispose(() => dio.close(force: true));
+  dio.interceptors.addAll([LoggingInterceptor(), ErrorInterceptor()]);
+  ref.onDispose(() => dio.close(force: true));
   return dio;
 });

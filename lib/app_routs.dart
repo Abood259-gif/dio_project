@@ -16,7 +16,7 @@ class AppRouter {
   static const String favoritesRoute = '/favorites';
 }
 
-final routerProvider = Provider<GoRouter>((ref) {
+final routerProvider = Provider.autoDispose<GoRouter>((ref) {
   final authState = ref.watch(authstateChange);
 
   return GoRouter(
@@ -42,34 +42,40 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRouter.signup,
         builder: (context, state) {
-          // You need to ensure SignupScreen is imported or created
-          // I will assume it's imported at the top. Let me add the import.
           return const SignupScreen();
         },
       ),
-      ShellRoute(
-        builder: (context, state, child) {
-          return ShellWidget(child: child);
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return ShellWidget(navigationShell: navigationShell);
         },
-        routes: [
-          GoRoute(
-            path: AppRouter.searchRoute,
-            builder: (context, state) {
-              return const SearchScreen();
-            },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRouter.productsRoute,
+                builder: (context, state) {
+                  return const ProductsScreen();
+                },
+              ),
+              GoRoute(
+                path: AppRouter.searchRoute,
+                builder: (context, state) {
+                  return const SearchScreen();
+                },
+              ),
+            ],
           ),
-          GoRoute(
-            path: AppRouter.productsRoute,
-            builder: (context, state) {
-              return const ProductsScreen();
-            },
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRouter.favoritesRoute,
+                builder: (context, state) {
+                  return const FavoritesScreen();
+                },
+              ),
+            ],
           ),
-          GoRoute(
-  path: AppRouter.favoritesRoute,
-  builder: (context, state) {
-    return const FavoritesScreen();
-  },
-),
         ],
       ),
     ],

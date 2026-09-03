@@ -6,7 +6,7 @@ import 'package:dio_project/repository/auth_repository.dart';
 import 'package:dio_project/repository/supabace_repo.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AuthNotifier extends AsyncNotifier<void> {
+class AuthNotifier extends AutoDisposeAsyncNotifier<void> {
   @override
   FutureOr<void> build() {
     return null;
@@ -75,11 +75,10 @@ class AuthNotifier extends AsyncNotifier<void> {
   }
 }
 
-final authNotifierProvider = AsyncNotifierProvider<AuthNotifier, void>(
-  AuthNotifier.new,
-);
+final authNotifierProvider =
+    AsyncNotifierProvider.autoDispose<AuthNotifier, void>(AuthNotifier.new);
 
-final authstateChange = StreamProvider<AppUser?>((ref) {
+final authstateChange = StreamProvider.autoDispose<AppUser?>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);
   return authRepository.authStateChanges();
 });

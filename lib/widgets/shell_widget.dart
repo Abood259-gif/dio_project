@@ -4,29 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class ShellWidget extends StatelessWidget {
-  const ShellWidget({super.key, required this._child});
-  final Widget _child;
-
-  int _indexForLocation(String location) {
-    if (location.startsWith(AppRouter.favoritesRoute)) return 1;
-    return 0; // default: products / search tab
-  }
-
-  void _onTap(BuildContext context, int index) {
-    switch (index) {
-      case 0:
-        context.go(AppRouter.productsRoute);
-        break;
-      case 1:
-        context.go(AppRouter.favoritesRoute);
-        break;
-    }
-  }
+  const ShellWidget({super.key, required this.navigationShell});
+  final StatefulNavigationShell navigationShell;
 
   @override
   Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).uri.toString();
-    final currentIndex = _indexForLocation(location);
+    final location = GoRouterState.of(context).uri.path;
+    final isSearchRoute = location == AppRouter.searchRoute;
 
     return Scaffold(
       backgroundColor: const Color(0xFF212121),
@@ -35,8 +19,8 @@ class ShellWidget extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              const HeaderWdget(),
-              Expanded(child: _child),
+              if (!isSearchRoute) const HeaderWdget(),
+              Expanded(child: navigationShell),
             ],
           ),
         ),
@@ -49,8 +33,8 @@ class ShellWidget extends StatelessWidget {
         child: SafeArea(
           top: false,
           child: BottomNavigationBar(
-            currentIndex: currentIndex,
-            onTap: (index) => _onTap(context, index),
+            currentIndex: navigationShell.currentIndex,
+            onTap: (index) => navigationShell.goBranch(index),
             backgroundColor: Colors.transparent,
             elevation: 0,
             type: BottomNavigationBarType.fixed,

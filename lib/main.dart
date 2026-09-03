@@ -1,7 +1,7 @@
-
 import 'package:dio_project/app_routs.dart';
 import 'package:dio_project/firebase_options.dart';
 import 'package:dio_project/provider/fcm_provider.dart';
+import 'package:dio_project/service/messaging/fcm_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -9,39 +9,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-@pragma('vm:entry-point')
-Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // You must initialize Firebase in this background isolate before doing anything else
-  await Firebase.initializeApp(); 
-  debugPrint('BACKGROUND MESSAGE: ${message.notification?.title}');
-}
 Future<void> main() async {
-
-await Supabase.initialize(
-   url: 'https://dgzbsqnuheqeuzqhwkxh.supabase.co',
-  publishableKey: 'sb_publishable_9oN1KvSyyEpW_rP5yNW-kA_JwySraXi',
-  );
-  
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  await Supabase.initialize(
+    url: 'https://dgzbsqnuheqeuzqhwkxh.supabase.co',
+    publishableKey: 'sb_publishable_9oN1KvSyyEpW_rP5yNW-kA_JwySraXi',
+  );
 
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 
- final container = ProviderContainer();
-
-  // Now we CAN read fcmServiceProvider, because `container` gives us
-  // the same dependency graph the widget tree will use afterward.
-  await container.read(fcmServiceProvider).initialize();
-
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   runApp(const ProviderScope(child: MainApp()));
 }
 
-class MainApp extends ConsumerWidget {
+class MainApp extends ConsumerStatefulWidget {
   const MainApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends ConsumerState<MainApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(fcmServiceProvider).initialize();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,

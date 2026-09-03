@@ -143,11 +143,11 @@ class AuthRepository {
   }
 }
 
-final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
+final firebaseAuthProvider = Provider.autoDispose<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
 });
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
+final authRepositoryProvider = Provider.autoDispose<AuthRepository>((ref) {
   final authStorage = ref.watch(stroageprovider);
   final authRemote = ref.watch(authRemoteProvider);
   final firebaseAuth = ref.watch(firebaseAuthProvider);

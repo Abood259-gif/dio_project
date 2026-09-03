@@ -10,6 +10,7 @@ import 'package:dio_project/screen/welcome_screen.dart';
 import 'package:dio_project/widgets/product_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/rendering.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class GridviewStripeWidget extends ConsumerStatefulWidget {
@@ -42,6 +43,7 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
   }
 
   void _onScroll() {
+    if (!widget.hasmore || widget.productProvider.isLoading) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 50) {
       widget.getProducts();
@@ -64,11 +66,8 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
       }
     });
 
-    final favoriteIds = ref
-            .watch(favoritesProvider)
-            .value
-            ?.map((f) => f.productId)
-            .toSet() ??
+    final favoriteIds =
+        ref.watch(favoritesProvider).value?.map((f) => f.productId).toSet() ??
         <String>{};
 
     return widget.productProvider.when(
@@ -87,6 +86,8 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
             Expanded(
               child: GridView.builder(
                 controller: _scrollController,
+                scrollCacheExtent: ScrollCacheExtent.pixels(300),
+                addAutomaticKeepAlives: false,
                 itemCount: productlist.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: widget.columns,
@@ -104,8 +105,9 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
                       final favorite = FavoriteEntity(
                         productId: product.id.toString(),
                         title: product.name,
-                        image:
-                            product.images.isNotEmpty ? product.images.first : '',
+                        image: product.images.isNotEmpty
+                            ? product.images.first
+                            : '',
                         price: product.price,
                       );
                       await ref
@@ -113,22 +115,24 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
                           .toggleFavorite(favorite);
 
                       final actionState = ref.read(favoriteActionsProvider);
-                      // if (actionState.hasError && context.mounted) {
-                      //   final messenger = ScaffoldMessenger.of(context);
-                      //   messenger.hideCurrentSnackBar();
-                      //   messenger.showSnackBar(
-                      //     const SnackBar(
-                      //       content: Text(
-                      //         'Failed to update favorite. Please try again.',
-                      //       ),
-                      //     ),
-                      //   );
-                      // }
+                      if (actionState.hasError && context.mounted) {
+                        final messenger = ScaffoldMessenger.of(context);
+                        messenger.hideCurrentSnackBar();
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Failed to update favorite. Please try again.',
+                            ),
+                          ),
+                        );
+                      }
                     },
                     onAddToCart: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => WelcomeScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => WelcomeScreen(),
+                        ),
                       );
                     },
                     onTap: () {},
@@ -143,14 +147,14 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
                     child: CircularProgressIndicator(),
                   )
                 : (!widget.hasmore
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: Text(
-                          'No more products to load.',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
-                        ),
-                      )
-                    : const SizedBox.shrink()),
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Text(
+                            'No more products to load.',
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        )
+                      : const SizedBox.shrink()),
           ],
         );
       },
@@ -158,6 +162,8 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
         enabled: true,
         child: GridView.builder(
           itemCount: 6,
+          scrollCacheExtent: ScrollCacheExtent.pixels(300),
+          addAutomaticKeepAlives: false,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: widget.columns,
             crossAxisSpacing: widget.isNarrow ? 10 : 12,
@@ -165,9 +171,7 @@ class GridviewStripeWidgetState extends ConsumerState<GridviewStripeWidget> {
             childAspectRatio: widget.isNarrow ? 0.64 : 0.68,
           ),
           itemBuilder: (context, index) {
-            return ProductCard(
-              onAddToCart: () {},
-              onTap: () {},
+            return const ProductCard(
               product: ProductEntity(
                 id: 1,
                 name: 'اسم منتج وهمي للعرض فقط',

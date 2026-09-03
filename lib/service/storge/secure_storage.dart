@@ -5,7 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorage implements StorgeInterface {
   final FlutterSecureStorage _storage;
- const SecureStorage({required this._storage}) ;
+  const SecureStorage({required this._storage});
   @override
   Future<void> writeData({required String key, required String value}) async {
     await _storage.write(key: key, value: value);
@@ -22,7 +22,7 @@ class SecureStorage implements StorgeInterface {
   }
 }
 
-final  storageProvider = Provider<StorgeInterface>((ref) {
+final storageProvider = Provider.autoDispose<StorgeInterface>((ref) {
   final flutterSecureStorageprovider = ref.watch(secureStorageProvider);
   return SecureStorage(storage: flutterSecureStorageprovider);
 });

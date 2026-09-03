@@ -1,57 +1,100 @@
+import 'dart:async';
+import 'dart:developer' as developer;
 
-
-
-import 'package:dio_project/main.dart';
+import 'package:dio_project/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'local_notification_service.dart';
 
-/// Must be a TOP-LEVEL (or static) function — not a class method —
-/// because Android runs this in a separate isolate when the app is
-/// terminated, and it needs to find this function without an object instance.
-
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  developer.log(
+    'BACKGROUND MESSAGE: ${message.notification?.title}',
+    name: 'FCM',
+  );
+}
 
 class FcmService {
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
-  final LocalNotificationService _localNotifications;
+  final FirebaseMessaging messaging;
+  final LocalNotificationService localNotifications;
+  StreamSubscription<RemoteMessage>? _messageSubscription;
+  StreamSubscription<String>? _tokenSubscription;
+  StreamSubscription<RemoteMessage>? _openedAppSubscription;
+  bool _isInitializing = false;
+  bool _isInitialized = false;
 
-  FcmService(this._localNotifications);
+  FcmService({required this.messaging, required this.localNotifications});
 
   Future<void> initialize() async {
-    // 1. Ask the user for permission (Android 13+, and required on iOS too)
-    await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    if (_isInitialized || _isInitializing) return;
+    _isInitializing = true;
 
-    // 2. Register the background/terminated handler
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    try {
+      await messaging.requestPermission(alert: true, badge: true, sound: true);
 
-    // 3. FOREGROUND: app is open right now — manually show a banner
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      final notification = message.notification;
-      if (notification != null) {
-        _localNotifications.show(
-          title: notification.title ?? '',
-          body: notification.body ?? '',
+      try {
+        await localNotifications.initialize();
+      } catch (error, stackTrace) {
+        developer.log(
+          'Local notification setup failed',
+          name: 'FCM',
+          error: error,
+          stackTrace: stackTrace,
         );
       }
-    });
 
-    // 4. User taps a notification while app was in BACKGROUND (not terminated)
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      debugPrint('Notification tapped (from background): ${message.data}');
-      // e.g. navigate to a specific screen based on message.data
-    });
+      final token = await messaging.getToken();
+      if (token != null) {
+        developer.log('FCM token received: $token', name: 'FCM');
+      }
 
-    // 5. App was fully TERMINATED and opened by tapping a notification
-    final initialMessage = await _messaging.getInitialMessage();
-    if (initialMessage != null) {
-      debugPrint('App opened from terminated state: ${initialMessage.data}');
-      // e.g. navigate to a specific screen based on initialMessage.data
+      _tokenSubscription = messaging.onTokenRefresh.listen((token) {
+        developer.log('FCM token refreshed: $token', name: 'FCM');
+      });
+
+      _messageSubscription = FirebaseMessaging.onMessage.listen((message) {
+        final notification = message.notification;
+        if (notification != null) {
+          localNotifications.show(
+            title: notification.title ?? '',
+            body: notification.body ?? '',
+          );
+        }
+      });
+
+      _openedAppSubscription = FirebaseMessaging.onMessageOpenedApp.listen((
+        message,
+      ) {
+        developer.log('Notification tapped: ${message.data}', name: 'FCM');
+      });
+
+      final initialMessage = await messaging.getInitialMessage();
+      if (initialMessage != null) {
+        developer.log(
+          'App opened from notification: ${initialMessage.data}',
+          name: 'FCM',
+        );
+      }
+
+      _isInitialized = true;
+    } catch (error, stackTrace) {
+      developer.log(
+        'FCM initialization failed; it can be retried',
+        name: 'FCM',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    } finally {
+      _isInitializing = false;
     }
   }
 
-  Future<String?> getToken() => _messaging.getToken();
+  Future<String?> getToken() => messaging.getToken();
+
+  Future<void> dispose() async {
+    await _messageSubscription?.cancel();
+    await _tokenSubscription?.cancel();
+    await _openedAppSubscription?.cancel();
+  }
 }

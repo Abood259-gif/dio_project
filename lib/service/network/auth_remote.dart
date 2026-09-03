@@ -36,7 +36,7 @@ class AuthRemote {
     try {
       final response = await authDio.post(
         'refresh-token',
-        data: {'refreshToken' : refreshToken},
+        data: {'refreshToken': refreshToken},
       );
       return (
         accessToken: response.data[ApiKeys.accessToken] as String,
@@ -48,7 +48,7 @@ class AuthRemote {
   }
 }
 
-final authRemoteProvider = Provider<AuthRemote>((ref) {
+final authRemoteProvider = Provider.autoDispose<AuthRemote>((ref) {
   final dio = ref.watch(dioAuthProvider);
   return AuthRemote(authDio: dio);
 });
